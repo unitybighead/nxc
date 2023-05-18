@@ -57,23 +57,27 @@ void setsensor()
   Wait(100);
 }
 
-void rotate(long deg){
-  if(deg > 0){
-    RotateMotorEx(TIRE,SPEED,deg * 1.5,100,true,true);
+void rotate(long deg)
+{
+  if (deg > 0)
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.5, 100, true, true);
     direction += deg;
   }
-  else{
-    RotateMotorEx(TIRE,SPEED,deg * 1.2,-100,true,true);
+  else
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.2, -100, true, true);
     direction -= deg;
   }
 }
 
 void wrap_around()
 {
-  old = direction;
-  while(direction >= old + 90){
+  long old = direction;
+  while (direction >= old + 90)
+  {
     rotate(30);
-    RotateMotorEx(TIRE,SPEED,60,0,true,true);
+    RotateMotorEx(TIRE, SPEED, 60, 0, true, true);
   }
 }
 
@@ -83,7 +87,8 @@ float PCon(float current, float Kp, float target)
   return Kp * dev;
 }
 
-void u_Wait(long ms){
+void u_Wait(long ms)
+{
   long old = CurrentTick();
   until(CurrentTick() < old + ms);
 }
@@ -92,7 +97,8 @@ void u_Wait(long ms){
 void USmove()
 {
   int temp;
-  while(ball_state != LOST){
+  while (ball_state != LOST)
+  {
     ball_sensor();
     if (steer != 0)
     {
@@ -111,6 +117,7 @@ void USmove()
 
 void USsensor()
 {
+  PlayTone(880, 10);
   byte current;
   ClearSensor(US);
   ClearScreen();
@@ -135,6 +142,7 @@ void USsensor()
 
 void ball_sensor()
 {
+  PlayTone(523, 10);
   if (Sensor(IR_BALL) >= BALL_DETECT)
   {
     ball_state = DETECT;
@@ -174,7 +182,7 @@ void ball_detecting()
   // lost
   if (ball_state = LOST)
   {
-    PlayToneEx(440, 400, 100, FALSE);
+    PlayTone(440, 100);
     OnRevSync(TIRE, 30, 0);
     u_Wait(500);
   }
@@ -182,7 +190,7 @@ void ball_detecting()
   // catch
   else if (ball_state = CATCH)
   {
-    PlayToneEx(263, 400, 100, FALSE);
+    PlayTone(263, 100);
     repeat(AVE)
     {
       old_field += Sensor(IR_FIELD);
