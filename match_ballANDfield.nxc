@@ -70,37 +70,11 @@ void rotate(long deg){
 
 void wrap_around()
 {
-  rotate(90);
-  Off(TIRE);
-  Wait(300);
-  OnFwdSync(TIRE, SPEED, 0);
-  Wait(STRAIGHT_TIME);
-  Off(TIRE);
-  Wait(300);
-
-  rotate(-90);
-  Off(TIRE);
-  Wait(300);
-  OnFwdSync(TIRE, SPEED * 1.5, -5);
-  Wait(STRAIGHT_TIME * 1.2);
-  Off(TIRE);
-  Wait(300);
-
-  rotate(-90);
-  Off(TIRE);
-  Wait(300);
-  OnFwdSync(TIRE, SPEED * 1.2, -5);
-  Wait(STRAIGHT_TIME * 0.6);
-  Off(TIRE);
-  Wait(300);
-
-  rotate(-90);
-  Off(TIRE);
-  Wait(300);
-  OnFwdSync(TIRE, SPEED * 1.5, -5);
-  Wait(STRAIGHT_TIME * 0.8);
-  Off(TIRE);
-  Wait(300);
+  old = direction;
+  while(direction >= old + 90){
+    rotate(30);
+    RotateMotorEx(TIRE,SPEED,60,0,true,true);
+  }
 }
 
 float PCon(float current, float Kp, float target)
