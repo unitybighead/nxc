@@ -1,0 +1,20 @@
+void rotate(long deg)
+{
+  if (deg > 0)
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.5, 100, true, true);
+    direction += deg;
+  }
+  else
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.2, -100, true, true);
+    direction -= deg;
+  }
+}
+
+task main(){
+  while(1){
+    rotate(90);
+    rotate(-90);
+  }
+}

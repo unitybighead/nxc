@@ -6,7 +6,7 @@
 #define TURN_TIME 400
 #define STRAIGHT_TIME 1500
 // Target--------------------------
-#define US_TARGET 30
+#define US_TARGET 40
 // Threshold-----------------------
 #define BALL_DETECT 45
 #define BALL_CATCH 5
@@ -17,7 +17,7 @@
 #define IR_BALL IN_3
 #define US IN_4
 // Gain----------------------------
-#define USKp 4
+#define USKp 3
 // Other---------------------------
 #define AVE 10
 #define LOST 0
@@ -61,12 +61,12 @@ void rotate(long deg)
 {
   if (deg > 0)
   {
-    RotateMotorEx(TIRE, SPEED, deg * 1.5, 100, true, true);
+    RotateMotorEx(TIRE, SPEED, deg * 1.45, 100, true, true);
     direction += deg;
   }
   else
   {
-    RotateMotorEx(TIRE, SPEED, deg * 1.2, -100, true, true);
+    RotateMotorEx(TIRE, SPEED, deg * 1.35, -100, true, true);
     direction -= deg;
   }
 }
@@ -96,18 +96,16 @@ void u_Wait(long ms)
 // Private Task--------------------
 void USmove()
 {
-  long temp;
   while (ball_state != LOST)
   {
     ball_sensor();
     USsensor();
     if (steer != 0)
     {
-      temp = steer;
-      rotate(temp);
+      rotate(steer);
       OnFwdSync(TIRE, SPEED, 0);
       u_Wait(US_STRAIGHT_TIME);
-      rotate(-temp);
+      rotate(-steer);
       Off(TIRE);
     }
     OnFwdSync(TIRE, SPEED, 0);
@@ -136,6 +134,12 @@ void USsensor()
     if (abs(steer) < 20)
     {
       steer = 0;
+    }
+    if(steer < -70){
+      steer = -70;
+    }
+    else if(steer > 70){
+      steer = 70;
     }
     NumOut(10, LCD_LINE2, steer);
   }
