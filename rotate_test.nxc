@@ -1,13 +1,16 @@
+#define SPEED 75
+#define TIRE OUT_AB
+int direction = 0;
 void rotate(long deg)
 {
   if (deg > 0)
   {
-    RotateMotorEx(TIRE, SPEED, deg * 1.5, 100, true, true);
+    RotateMotorEx(TIRE, SPEED, deg * 1.45, 100, true, true);
     direction += deg;
   }
   else
   {
-    RotateMotorEx(TIRE, SPEED, deg * 1.2, -100, true, true);
+    RotateMotorEx(TIRE, SPEED, deg * 1.35, -100, true, true);
     direction -= deg;
   }
 }
