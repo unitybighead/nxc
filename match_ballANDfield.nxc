@@ -111,7 +111,7 @@ void USmove()
       Off(TIRE);
     }
     OnFwdSync(TIRE, SPEED, 0);
-    u_Wait(200);
+    u_Wait(1000);
     Off(TIRE);
   }
 }
