@@ -23,7 +23,6 @@
 #define WHITE 1
 // Gain---------------------------
 
-
 // Private Variable---------------
 byte our_goal = WHITE;
 char steer;
@@ -95,7 +94,16 @@ void ball_detecting() {
   ball_sensor();
   switch (ball_state) {
     case LOST:
-      rotate(30);
+      int i = 0;
+      while (i < 12) {
+        rotate(30);
+        ball_sensor();
+        if (ball_state != LOST) {
+          break;
+        }
+      }
+      OnFwdSync(TIRE, SPEED, 0);
+      u_Wait(1000);
       break;
 
     case DETECT:
