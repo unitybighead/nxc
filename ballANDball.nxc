@@ -1,0 +1,110 @@
+// Threshold-----------------------
+#define BALL_DETECT 45
+#define BALL_CATCH 5
+#define BALL_LOST BALL_DETECT - 20
+// Port----------------------------
+#define TIRE OUT_AB
+#define IR_LEFT IN_2
+#define IR_RIGHT IN_3
+#define US IN_4
+// Other---------------------------
+#define AVE 10
+#define LOST 0
+#define DETECT 1
+#define CATCH 2
+#define KICK 3
+#define DETECT_CENTER 4
+#define DETECT_LEFT 5
+#define DETECT_RIGHT 6
+#define BLACK 0
+#define WHITE 1
+
+// Private Variable---------------
+byte our_goal = WHITE;
+char steer;
+byte ball_state;
+bool move_state;
+long direction;
+// Prototype Declaration-----------
+void sentsensor();
+void rotate(long deg);
+void wrap_around();
+long PCon(long current, long Kp, long target);
+void ball_sensor();
+void ball_detecting();
+void u_Wait(long ms);
+// Private Function----------------
+
+void setsensor() {
+  SetSensorLowspeed(US);
+  SetSensor(IR_BALL, SENSOR_LIGHT);
+  SetSensorMode(IR_BALL, SENSOR_MODE_PERCENT);
+  SetSensorType(IR_BALL, SENSOR_TYPE_LIGHT_INACTIVE);
+  SetSensor(IR_FIELD, SENSOR_LIGHT);
+  SetSensorMode(IR_FIELD, SENSOR_MODE_RAW);
+  SetSensorType(IR_FIELD, SENSOR_TYPE_LIGHT_ACTIVE);
+  Wait(100);
+}
+
+void rotate(long deg) {
+  if (deg > 0) {
+    RotateMotorEx(TIRE, SPEED, deg * 1.45, 100, true, true);
+    direction += deg;
+  } else {
+    RotateMotorEx(TIRE, SPEED, deg * 1.35, -100, true, true);
+    direction -= deg;
+  }
+}
+
+void wrap_around() {
+  long old = direction;
+  while (direction >= old + 90) {
+    rotate(30);
+    RotateMotorEx(TIRE, SPEED, 60, 0, true, true);
+  }
+}
+
+long PCon(long current, long Kp, long target) {
+  long dev = current - target;
+  return Kp * dev;
+}
+
+void u_Wait(long ms) {
+  long old = CurrentTick();
+  while (CurrentTick() < old + ms)
+    ;
+}
+
+void ball_detecting() {
+  while (ball_state == LOST) {
+    ball_sensor();
+    rotate(30);
+  }
+  switch (ball_state) { case DETECT_CENTER: }
+}
+
+void ball_sensor() {
+  int left = Sensor(IR_LEFT), right = Sensor(IR_RIGHT);
+  if (left > BALL_CATCH || right > BALL_CATCH) {
+    ball_state = CATCH;
+  } else if (left > BALL_DETECT) {
+    if (right > BALL_DETECT) {
+      ball_state = DETECT_CENTER;
+    } else {
+      ball_state = DETECT_LEFT;
+    }
+  } else if (right > BALL_DETECT) {
+    ball_state = DETECT_RIGHT
+  } else {
+    ball_state = LOST;
+  }
+}
+
+task main() {
+  setsensor();
+  ball_state = LOST;
+  direction = 0;
+  while (true) {
+    ball_detecting();
+  }
+}
