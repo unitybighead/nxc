@@ -155,8 +155,6 @@ void ball_detecting() {
   OnFwdSync(TIRE, SPEED, 0);
   while (ball_state == DETECT) {
     ball_sensor();
-    while (1)
-      ;
   }
   Off(TIRE);
 
