@@ -1,0 +1,105 @@
+#define IR_THRESHOLD 50
+#define IR_FIELD IN_2
+#define IR_BALL IN_3
+#define FAILED 0
+#define WHITE 1
+#define BLACK 2
+#define TIRE OUT_AB
+#define SPEED 40
+#define RESOLUTION 12
+#define BALL_DETECT 45
+#define BALL_CATCH 55
+#define TURN_TIME 400
+#define STRAIGHT_TIME 1500
+#define AVE 10
+
+task main(){
+  SetSensor(IR_BALL,SENSOR_LIGHT);
+  SetSensorMode(IR_BALL,SENSOR_MODE_PERCENT);
+  SetSensorType(IR_BALL,SENSOR_TYPE_LIGHT_INACTIVE);
+  SetSensor(IR_FIELD,SENSOR_LIGHT);
+  SetSensorMode(IR_FIELD,SENSOR_MODE_RAW);
+  SetSensorType(IR_FIELD,SENSOR_TYPE_LIGHT_ACTIVE);
+  Wait(1000);
+
+  int old_field,current_field;
+  while(true){
+    old_field = 0,current_field = 0;
+
+    while(Sensor(IR_BALL) <= BALL_DETECT){
+      OnFwd(OUT_A,50);
+      OnRev(OUT_B,50);
+      Wait(16);
+    }
+    OnFwdSync(TIRE,SPEED,0);
+    until(Sensor(IR_BALL) < BALL_DETECT - 20 || Sensor(IR_BALL) > BALL_CATCH );
+    Off(TIRE);
+
+    //lost
+    if(Sensor(IR_BALL) < BALL_DETECT-20){
+      PlayToneEx(440,400,100,FALSE);
+      OnRevSync(TIRE,30,0);
+      Wait(500);
+    }
+
+    //catch
+    else{
+      PlayToneEx(263,400,100,FALSE);
+      repeat(AVE){
+        old_field += Sensor(IR_FIELD);
+        Wait(50);
+      }
+      old_field /= AVE;
+      OnRevSync(TIRE,40,0);
+      Wait(500);
+      repeat(AVE){
+        current_field += Sensor(IR_FIELD);
+        Wait(50);
+      }
+      current_field /= AVE;
+      if(current_field < old_field){//white
+        //wrap around
+        OnFwdSync(TIRE,50,100);
+        Wait(TURN_TIME);
+        Off(TIRE);
+        Wait(300);
+        OnFwdSync(TIRE,SPEED,0);
+        Wait(STRAIGHT_TIME);
+        Off(TIRE);
+        Wait(300);
+
+          OnFwdSync(TIRE,50,-100);
+          Wait(TURN_TIME * 1.5);
+          Off(TIRE);
+          Wait(300);
+          OnFwdSync(TIRE,SPEED * 1.5,-5);
+          Wait(STRAIGHT_TIME * 1.2);
+          Off(TIRE);
+          Wait(300);
+
+          OnFwdSync(TIRE,50,-100);
+          Wait(TURN_TIME * 1.5);
+          Off(TIRE);
+          Wait(300);
+          OnFwdSync(TIRE,SPEED * 1.2,-5);
+          Wait(STRAIGHT_TIME*0.6);
+          Off(TIRE);
+          Wait(300);
+
+          OnFwdSync(TIRE,50,-100);
+          Wait(TURN_TIME * 1.5);
+          Off(TIRE);
+          Wait(300);
+          OnFwdSync(TIRE,SPEED * 1.5,-5);
+          Wait(STRAIGHT_TIME * 0.8);
+          Off(TIRE);
+          Wait(300);
+
+
+      }
+
+      OnFwdSync(TIRE,SPEED,0);
+      Wait(3000);
+    }
+  }
+}

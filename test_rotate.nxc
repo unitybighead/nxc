@@ -1,0 +1,12 @@
+task main(){
+  SetSensor(IN_1,SENSOR_MODE_ROTATION);ClearSensor(IN_1);
+  OnFwd(OUT_A,30);
+  int a;
+  while(true){
+    ClearScreen();
+    a = SENSOR_1
+    NumOut(1,LCD_LINE1,a);
+    NumOut(1,LCD_LINE2,CurrentTick());
+    Wait(100);
+  }
+}

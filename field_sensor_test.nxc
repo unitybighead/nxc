@@ -1,0 +1,14 @@
+task main(){
+  SetSensor(IN_2,SENSOR_LIGHT);
+  SetSensorMode(IN_2,SENSOR_MODE_RAW);
+  SetSensorType(IN_2,SENSOR_TYPE_LIGHT_ACTIVE);
+  int old,cur;
+  while(true){
+    old = Sensor(IN_2);
+    OnFwdSync(OUT_AB,30,0);
+    Wait(500);
+    Off(OUT_AB);
+    NumOut(60,LCD_LINE1,old);
+    Wait(2000);
+  }
+}

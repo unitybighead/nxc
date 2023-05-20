@@ -1,0 +1,61 @@
+#define SPEED 50
+#define IR_THRESHOLD 40
+#define IR_RATE 0.5
+#define DEG 60
+
+sub set_sensor();
+
+task main()
+{
+  set_sensor();
+  int max_rotate,current_rotate;
+  int max_ir;
+  
+  while(true){
+    // reset variable and sensor
+    max_rotate = 0;
+    max_ir = 0;
+    current_rotate = 0;
+  
+    // rotate until one rotation or
+    // sensor value starts to decrease below max_ir
+    //while(SENSOR_1 == FULL_ROTATED){
+
+    while(current_rotate <= 360/DEG){
+      RotateMotorEx(OUT_AB,100,DEG,-100,true,true);
+      if(SENSOR_2 > max_ir){
+        max_ir = SENSOR_2;
+        max_rotate = current_rotate;
+      }
+      else if(max_ir > IR_THRESHOLD && SENSOR_2 < max_ir * IR_RATE){
+        break;
+      }
+      current_rotate++;
+    }
+    Off(OUT_AB);
+    Wait(100);
+  
+    // if machine did not detect a ball, go forward anyway
+    if(max_ir < IR_THRESHOLD){
+      OnFwdSync(OUT_AB,SPEED,0);
+      Wait(1000);
+    }
+    else{
+      // rotate back to max_ir point
+      repeat(current_rotate - max_rotate){
+        RotateMotorEx(OUT_AB,100,-DEG,-100,true,true);
+      }
+    }
+    Off(OUT_AB);
+  
+    // go forward until missing the ball
+    OnFwdSync(OUT_AB,SPEED,0);
+    until(SENSOR_2 > IR_THRESHOLD);
+  }
+}
+
+sub set_sensor(){
+  SetSensor(IN_2,SENSOR_LIGHT);
+  SetSensorMode(IN_2,SENSOR_MODE_PERCENT);
+  SetSensorType(IN_2,SENSOR_TYPE_LIGHT_INACTIVE);
+}

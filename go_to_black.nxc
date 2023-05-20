@@ -1,0 +1,62 @@
+#define SPEED 50
+#define ARR_SIZE 5
+#define SIDEWAY 5
+#define STRAIGHT 10
+
+float move_average();
+
+float data[ARR_SIZE] = {0};
+
+task main(){
+  SetSensor(IN_2,SENSOR_LIGHT);
+  SetSensorMode(IN_2,SENSOR_MODE_RAW);
+  SetSensorType(IN_2,SENSOR_TYPE_LIGHT_ACTIVE);
+  
+  float ave,pre_ave,dif;
+  OnFwdSync(OUT_AB,SPEED,0);
+  for(int i = 0;i < ARR_SIZE; i++){
+    data[i] = Sensor(IN_2);
+    Wait(100);
+  }
+  pre_ave = move_average();
+  
+  while(true){
+      for(int i = 0;i < ARR_SIZE; i++){
+        data[i] = Sensor(IN_2);
+        Wait(50);
+      }
+    
+    ave = move_average();
+    dif = ave - pre_ave;
+    if(dif > 1000|| dif < -50){
+      continue;
+    }
+    NumOut(10,LCD_LINE2,pre_ave);
+    NumOut(10,LCD_LINE3,ave);
+    NumOut(10,LCD_LINE4,dif);
+    
+    //back
+    if(ave < pre_ave - STRAIGHT){
+      RotateMotorEx(OUT_AB,75,360,-100,true,true);
+      Off(OUT_AB);
+      Wait(200);
+    }
+    //sideway
+    else if(ave <= pre_ave + SIDEWAY){
+      RotateMotorEx(OUT_AB,75,120,-100,true,true);
+    }
+    OnFwdSync(OUT_AB,SPEED,0);
+    Wait(500);
+    pre_ave = ave;
+    
+  }
+}
+
+float move_average(){
+  float average  = 0;
+  for(int i = 0; i < ARR_SIZE; i++){
+    average += data[i];
+  }
+  average = average / ARR_SIZE;
+  return average;
+}

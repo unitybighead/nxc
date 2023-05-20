@@ -1,0 +1,7 @@
+task main(){
+  long a = 0;
+  byte b = 1;
+  b = a;
+  NumOut(10,LCD_LINE1,b);
+  
+}

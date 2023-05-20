@@ -1,0 +1,50 @@
+#define SPEED 30
+#define TURN_SPEED 50
+#define TIRE OUT_AB
+#define TARGET 10
+#define THRESHOLD 3
+#define C 5;
+#define US IN_4
+#define TURN_TIME 300
+#define STRAIGHT_TIME 100
+
+task main(){
+  SetSensorLowspeed(US);
+  char steer = 0;
+  byte old = SensorUS(US),current;
+  
+  while(true){
+    OnFwdSync(TIRE,TURN_SPEED,steer);
+    Wait(TURN_TIME);
+    OnFwdSync(TIRE,SPEED,0);
+    Wait(STRAIGHT_TIME);
+    OnFwdSync(TIRE,TURN_SPEED,-steer);
+    Wait(TURN_TIME + 100);
+    
+    current = SensorUS(US);
+    
+    if(current < 0 ||current >= 255){
+      PlayTone(1000,500);
+      ClearSensor(US);
+      continue;
+    }
+    
+    NumOut(10,LCD_LINE1,current);
+    if(current < TARGET - THRESHOLD){
+      if(current < old - THRESHOLD){
+        steer -= C;
+      }
+    }
+    else if(current > TARGET + THRESHOLD){
+      if(current > old + THRESHOLD){
+        steer  += C;
+      }
+    }
+    else{
+      steer = 0;
+    }
+
+    old = current;
+  }
+  
+}

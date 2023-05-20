@@ -1,0 +1,125 @@
+#define IR_FIELD IN_2
+#define IR_BALL IN_3
+#define FAILED 0
+#define WHITE 1
+#define BLACK 2
+#define TIRE OUT_AC
+#define SPEED 50
+#define RESOLUTION 12
+#define BALL_DETECT 30
+#define BALL_CATCH 70
+#define WHEEL_D 80
+#define MACHINE_D 147
+
+void set_sensor();
+int ball_detecting();
+void go_to_ball();
+void rotate(int deg);
+void wrap_around();
+
+
+task main(){
+  int place = FAILED;
+  set_sensor();
+  
+  //until ball was detected
+  while(place != FAILED){
+    place = ball_detecting();
+  }
+  if(place == WHITE){
+    wrap_around();
+  }
+  
+  while(true){
+    OnFwdSync(TIRE,SPEED,0);
+  }
+}
+
+
+int ball_detecting(){
+  int ball[RESOLUTION],old_field_ir = 0,current_field_ir = 0;
+  int max_ball = 0,max_arr = 0;
+  
+  //field_ir using move_average
+  repeat(3){
+    old_field_ir += SensorRaw(IR_FIELD);
+    Wait(50);
+  }
+  old_field_ir /= 3;
+  
+  //turn around
+  for(int i = 0; i < RESOLUTION; i++){
+    ball[i] = Sensor(IR_BALL);
+    rotate(360/RESOLUTION);
+    Wait(100);
+  }
+  
+  //search max_ball
+  for(int i = 0;i < RESOLUTION; i++){
+    if(ball[i] > max_ball){
+      max_ball = ball[i];
+      max_arr = i;
+    }
+  }
+  
+  //could not detect
+  if(max_ball < BALL_DETECT){
+    OnFwdSync(TIRE,SPEED,0);
+    Wait(500);
+    Off(TIRE);
+    return FAILED;
+  }
+  
+  //back_to direction for ball
+  rotate(max_ball * 360 / RESOLUTION);
+  go_to_ball();
+  
+  repeat(3){
+    current_field_ir += SensorRaw(IR_FIELD);
+    Wait(50);
+  }
+  current_field_ir /= 3;
+  
+  if(current_field_ir < old_field_ir){
+    return WHITE;
+  }
+  else{
+    return BLACK;
+  }
+}
+
+
+void go_to_ball(){
+  while(Sensor(IR_BALL) < BALL_CATCH){
+    OnFwdSync(TIRE,SPEED,0);
+    Wait(50);
+  }
+  Off(TIRE);
+}
+
+
+void wrap_around(){
+  rotate(90);
+  repeat(3){
+    OnFwdSync(TIRE,50,0);
+    Wait(500);
+    Off(TIRE);
+    Wait(50);
+    rotate(-90);
+  }
+}
+
+
+void rotate(int deg){
+  RotateMotorEx(TIRE,SPEED,(deg/360) * (MACHINE_D/WHEEL_D),-100,true,true);
+}
+
+
+void set_sensor(){
+  SetSensor(IR_BALL, SENSOR_LIGHT);
+  SetSensorMode(IR_BALL, SENSOR_MODE_PERCENT);
+  SetSensorType(IR_BALL, SENSOR_TYPE_LIGHT_INACTIVE);
+  SetSensor(IR_FIELD, SENSOR_LIGHT);
+  SetSensorMode(IR_FIELD, SENSOR_MODE_RAW);
+  SetSensorType(IR_FIELD, SENSOR_TYPE_LIGHT_ACTIVE);
+}

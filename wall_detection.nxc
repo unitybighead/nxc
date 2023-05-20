@@ -1,0 +1,21 @@
+#define TURN_TIME 600
+#define TOUCH IN_1
+
+task main()
+{
+  SetSensor(TOUCH, SENSOR_TOUCH);
+  SetSensorMode(TOUCH, SENSOR_MODE_BOOL);
+  
+  while(true){
+    if(SENSOR_1 == 1){
+      OnRevSync(OUT_AB,30,0);
+      Wait(500);
+      OnFwd(OUT_A,75);
+      OnRev(OUT_B,75);
+      Wait(TURN_TIME);
+      continue;
+    }
+    OnFwdSync(OUT_AB, 75,0);
+    Wait(16);
+  }
+}

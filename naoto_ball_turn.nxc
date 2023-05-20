@@ -1,0 +1,53 @@
+#define time 16
+
+#define turntime 520
+
+#define sensor1 50
+
+#define sensor2 20
+
+task main(){
+
+SetSensorLight(IN_3);
+SetSensorType(IN_3,SENSOR_TYPE_LIGHT_INACTIVE);
+
+
+while(true){
+
+OnFwdSync(OUT_AC,75,0);
+
+while(Sensor(IN_3)>=sensor1){
+
+  OnFwd(OUT_A,75);
+
+  OnRev(OUT_C,75);
+
+  Wait(time);
+
+}
+
+ OnFwdSync(OUT_AC,75,0);
+
+until(Sensor(IN_3)<=sensor2){
+
+  OnFwd(OUT_A,75);
+
+  OnRev(OUT_C,75);
+
+ Wait(turntime);
+
+OnFwd(OUT_A,75);
+
+  OnRev(OUT_C,40);
+
+  Wait(2000);
+
+OnFwd(OUT_A,75);
+
+  OnRev(OUT_C,75);
+
+ Wait(turntime);
+
+}
+}
+}

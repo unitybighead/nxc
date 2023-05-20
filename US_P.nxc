@@ -1,0 +1,79 @@
+#define SPEED 50
+#define TURN_SPEED 70
+#define TIRE OUT_AB
+#define TARGET 10
+#define US IN_4
+#define STRAIGHT_TIME 500
+
+#define USKp 4
+
+long steer;
+
+void rotate(long deg)
+{
+  if (deg > 0)
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.5, 100, true, true);
+  }
+  else
+  {
+    RotateMotorEx(TIRE, SPEED, deg * 1.2, -100, true, true);
+  }
+}
+
+long PCon(byte current, long Kp)
+{
+  long dev = current - TARGET;
+  return Kp * dev;
+  //return 90;
+}
+
+void USsensor()
+{
+  byte current;
+  ClearSensor(US);
+  ClearScreen();
+  current = SensorUS(US);
+  if (current < 0 || current >= 255)
+  {
+    PlayTone(1000, 100);
+    ClearSensor(US);
+  }
+  else
+  {
+    NumOut(10, LCD_LINE1, current);
+
+    steer = PCon(current, USKp);
+    if (abs(steer) < 20)
+    {
+      steer = 0;
+    }
+    NumOut(10, LCD_LINE2, steer);
+  }
+}
+
+void USmove()
+{
+  steer = 0;
+
+  USsensor();
+  rotate(steer);
+  OnFwdSync(TIRE, SPEED, 0);
+  Wait(STRAIGHT_TIME);
+  rotate(-steer);
+  Off(TIRE);
+  OnFwdSync(TIRE, SPEED, 0);
+  Wait(200);
+  Off(TIRE);
+  Wait(500);
+}
+
+task main()
+{
+  SetSensorLowspeed(US);
+  Wait(100);
+  while (true)
+  {
+    USmove();
+  }
+}

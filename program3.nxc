@@ -1,0 +1,31 @@
+#define THRESHOLD 40
+
+task main()
+{
+  SetSensor(IN_1,SENSOR_TOUCH);
+  SetSensor(IN_2,SENSOR_LIGHT);
+  SetSensor(IN_3,SENSOR_LIGHT);
+  SetSensorMode(IN_1, SENSOR_MODE_BOOL);
+  SetSensorMode(IN_2, SENSOR_MODE_RAW);
+  SetSensorMode(IN_3, SENSOR_MODE_PERCENT);
+  SetSensorType(IN_2, SENSOR_TYPE_LIGHT_INACTIVE);
+  SetSensorType(IN_3, SENSOR_TYPE_LIGHT_ACTIVE);
+  
+  while(true){
+    OnFwd(OUT_AB, 75);
+    if(SENSOR_1 == 0){
+      if(Sensor(IN_3) > THRESHOLD){
+        OnRev(OUT_B,75);
+        Wait(500);
+      }else{
+        OnFwd(OUT_AB,75);
+      }
+    }else{
+      OnRev(OUT_AB,30);
+      Wait(1000);
+    }
+  }
+  
+}
+
+
