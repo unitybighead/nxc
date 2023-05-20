@@ -184,10 +184,9 @@ void ball_detecting() {
       u_Wait(50);
     }
     current_field /= AVE;
-    if ((our_goal == WHITE && current_field < old_field)  // white
-        ||
-        (our_goal == BLACK && current_field > old_field)) {  // black
-                                                             // wrap_around();
+    if ((our_goal == WHITE && current_field < old_field)        // white
+        || (our_goal == BLACK && current_field > old_field)) {  // black
+      wrap_around();
     }
 
     OnFwdSync(TIRE, SPEED, 0);
