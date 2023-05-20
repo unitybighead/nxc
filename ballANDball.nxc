@@ -13,9 +13,9 @@
 #define DETECT 1
 #define CATCH 2
 #define KICK 3
-#define DETECT_CENTER 4
-#define DETECT_LEFT 5
-#define DETECT_RIGHT 6
+#define CENTER 0
+#define LEFT 1
+#define RIGHT 2
 #define BLACK 0
 #define WHITE 1
 
@@ -23,6 +23,7 @@
 byte our_goal = WHITE;
 char steer;
 byte ball_state;
+byte ball_place;
 bool move_state;
 long direction;
 // Prototype Declaration-----------
@@ -80,22 +81,37 @@ void ball_detecting() {
     ball_sensor();
     rotate(30);
   }
-  switch (ball_state) { case DETECT_CENTER: }
+  switch (ball_place) {
+    case DETECT_CENTER:
+      while (ball_state != DETECT_CENTER) {
+        OnFwdSync(TIRE, SPEED, 0);
+      }
+      break;
+    case 
+  }
 }
 
 void ball_sensor() {
   int left = Sensor(IR_LEFT), right = Sensor(IR_RIGHT);
+
   if (left > BALL_CATCH || right > BALL_CATCH) {
     ball_state = CATCH;
-  } else if (left > BALL_DETECT) {
-    if (right > BALL_DETECT) {
-      ball_state = DETECT_CENTER;
-    } else {
-      ball_state = DETECT_LEFT;
+  } 
+
+  else if (left > BALL_CATCH || right > BALL_CATCH) {
+    ball_state = DETECT;
+    if (left > BALL_DETECT && right > BALL_DETECT) {
+      ball_place = CENTER;
+    } 
+    else if(left > BALL_DETECT){
+      ball_place = LEFT;
     }
-  } else if (right > BALL_DETECT) {
-    ball_state = DETECT_RIGHT
-  } else {
+    else{
+      ball_place = RIGHT
+    }
+  } 
+
+  else {
     ball_state = LOST;
   }
 }
