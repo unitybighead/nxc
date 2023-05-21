@@ -109,9 +109,7 @@ void ball_detecting() {
     case DETECT:
       switch (ball_place) {
         case CENTER:
-          while (ball_state != CENTER) {
-            OnFwdSync(TIRE, SPEED, 0);
-          }
+          OnFwdSync(TIRE, SPEED - 25, 0);
           break;
 
         case LEFT:
