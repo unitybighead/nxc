@@ -12,8 +12,9 @@
 #define D_1sW 43
 // Threshold-----------------------
 #define BALL_DETECT 40
-#define BALL_CATCH 45
+#define BALL_CATCH 4
 #define BALL_LOST BALL_DETECT - 20
+#define WHITE_FIELD 500
 // Port----------------------------
 #define TIRE OUT_AB
 #define IR_FIELD IN_2
@@ -21,7 +22,7 @@
 #define US IN_4
 // Gain----------------------------
 #define USKp 3
-#define
+#define FKp 5
 // Other---------------------------
 #define AVE 10
 #define LOST 0
@@ -51,6 +52,7 @@ void USmove();
 void USsensor();
 void ball_sensor();
 void ball_detecting();
+void field_sensor_P();
 void u_Wait(long ms);
 // Private Function----------------
 
@@ -85,7 +87,7 @@ void wrap_around() {
   }
 }
 
-long PCon(long current, float Kp, long target) {
+long PCon(long current, long Kp, long target) {
   long dev = current - target;
   return Kp * dev;
 }
@@ -190,7 +192,9 @@ void USsensor() {
   if (current < 0 || current >= 255) {
     PlayTone(1000, 100);
     ClearSensor(US);
-  } else {
+    steer = 0;
+  } 
+  else {
     NumOut(10, LCD_LINE1, current);
 
     steer = PCon(current, USKp, US_TARGET);
@@ -209,34 +213,28 @@ void USsensor() {
     }
     NumOut(10, LCD_LINE2, steer);
 
-    if (current < old) {
-      us_direction = CLOSE
-    } else {
-      us_direction = AWAY
+    if (current < old_us) {
+      us_direction = CLOSE;
+    }
+    else {
+      us_direction = AWAY;
     }
     old_us = current;
   }
 }
 
-void field_sensor() {
-  int current = Sensor(IR_FIELD);
-  int dif = old - current;
-  long deg = 90 - asin(dif / D_1s);
-  steer += -deg;
-  old_field = current;
-}
-
 void field_sensor_P() {
+  long temp;
   int current = Sensor(IR_FIELD);
   int dif = current - old_field;
-  if (current < WHITE) {
+  if (current < WHITE_FIELD) {
     if (dif < D_1sW) {
-      long temp = PCon(dif, FKp, D_1sW);
+      long temp = (PCon(dif, FKp, D_1sW)) / 10;
     }
   }
-}
+
 else if (dif < D_1s) {
-  long temp = PCon(dif, FKp, D_1s);
+  temp = (PCon(dif, FKp, D_1s)) / 10;
 }
 switch (us_direction) {
   case AWAY:
@@ -248,6 +246,7 @@ switch (us_direction) {
   default:
     steer = 0;
     break;
+}
 }
 
 
