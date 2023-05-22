@@ -8,13 +8,13 @@ task main(){
   Wait(1000);
   int current = Sensor(IN_3);
   NumOut(0,LCD_LINE1,current - old);
-  int old = current;
+  old = current;
   Wait(1000);
-  int current = Sensor(IN_3);
+  current = Sensor(IN_3);
   NumOut(0,LCD_LINE2,current - old);
-  int old = current;
+  old = current;
   Wait(1000);
-  int current = Sensor(IN_3);
+  current = Sensor(IN_3);
   NumOut(0,LCD_LINE3,current - old);
   Off(OUT_AB);
   Off(OUT_AB);

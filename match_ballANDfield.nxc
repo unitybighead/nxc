@@ -1,15 +1,15 @@
 // do your best!
 // Move----------------------------
-#define SPEED 75
+#define SPEED 60
 #define TURN_SPEED 70
 #define US_STRAIGHT_TIME 500
 #define TURN_TIME 400
-#define STRAIGHT_TIME 1500
+#define STRAIGHT_TIME 2000
 #define ONE_ROTATE_TIME 1145
 // Target--------------------------
-#define US_TARGET 40
-#define D_1s 60
-#define D_1sW 43
+#define US_TARGET 20
+#define D_1s 10
+#define D_1sW 10
 // Threshold-----------------------
 #define BALL_DETECT 40
 #define BALL_CATCH 4
@@ -21,8 +21,8 @@
 #define IR_BALL IN_3
 #define US IN_4
 // Gain----------------------------
-#define USKp 3
-#define FKp 5
+#define USKp 1
+#define FKp 3
 // Other---------------------------
 #define AVE 10
 #define LOST 0
@@ -42,7 +42,7 @@ bool move_state;
 long direction;
 byte old_us;
 int old_field;
-byte us_direction;
+byte us_direction = CLOSE;
 // Prototype Declaration-----------
 void sensensor();
 void rotate(long deg);
@@ -70,11 +70,11 @@ void setsensor() {
 void rotate(long deg) {
   if (deg > 0) {
     OnFwdSync(TIRE, SPEED, 100);
-    u_Wait(ONE_ROTATE_TIME * deg / 360);
+    u_Wait((ONE_ROTATE_TIME * deg / 360) + 200);
     direction += deg;
   } else {
     OnFwdSync(TIRE, SPEED, -100);
-    u_Wait(ONE_ROTATE_TIME * deg / 360);
+    u_Wait((ONE_ROTATE_TIME * (deg + 20) / 360) - 200);
     direction -= deg;
   }
 }
@@ -165,21 +165,28 @@ void ball_detecting() {
 }
 
 void USmove() {
-  old_field = Sensor(IR_FIELD);
   while (ball_state != LOST) {
     ball_sensor();
     field_sensor_P();
-    rotate(steer);
+    // rotate(steer);
+    RotateMotorEx(TIRE, SPEED, 0, 0, true, true);
+    Off(TIRE);
+    Wait(1000);
+    NumOut(10, LCD_LINE2, steer);
     USsensor();
-    if (steer != 0) {
-      rotate(steer);
-      OnFwdSync(TIRE, SPEED, 0);
-      u_Wait(US_STRAIGHT_TIME);
-      rotate(-steer);
-      Off(TIRE);
-    }
+    //    if (steer != 0) {
+    //      rotate(steer);
+    //      OnFwdSync(TIRE, SPEED, 0);
+    //      u_Wait(US_STRAIGHT_TIME);
+    //      rotate(-steer);
+    //      Off(TIRE);
+    //
+
     OnFwdSync(TIRE, SPEED, 0);
-    u_Wait(1000);
+    Wait(1000);
+    if (ball_state == CATCH) {
+      ball_state = KICK;
+    }
   }
 }
 
@@ -187,18 +194,17 @@ void USsensor() {
   PlayTone(880, 1000);
   byte current;
   ClearSensor(US);
-  ClearScreen();
+  // ClearScreen();
   current = SensorUS(US);
   if (current < 0 || current >= 255) {
     PlayTone(1000, 100);
     ClearSensor(US);
     steer = 0;
-  } 
-  else {
+  } else {
     NumOut(10, LCD_LINE1, current);
 
     steer = PCon(current, USKp, US_TARGET);
-    if (abs(steer) < 20) {
+    if (abs(steer) < 10) {
       steer = 0;
     }
     // too big
@@ -215,8 +221,7 @@ void USsensor() {
 
     if (current < old_us) {
       us_direction = CLOSE;
-    }
-    else {
+    } else {
       us_direction = AWAY;
     }
     old_us = current;
@@ -225,37 +230,51 @@ void USsensor() {
 
 void field_sensor_P() {
   long temp;
-  int current = Sensor(IR_FIELD);
+  int current = 0;
+  repeat(AVE) {
+    current += Sensor(IR_FIELD);
+    u_Wait(20);
+  }
+  current /= AVE;
   int dif = current - old_field;
+  NumOut(0, LCD_LINE3, current);
+  NumOut(0, LCD_LINE4, old_field);
+  NumOut(0, LCD_LINE5, dif);
+  old_field = current;
+
   if (current < WHITE_FIELD) {
     if (dif < D_1sW) {
-      long temp = (PCon(dif, FKp, D_1sW)) / 10;
+      long temp = PCon(dif, FKp, D_1sW);
     }
   }
 
-else if (dif < D_1s) {
-  temp = (PCon(dif, FKp, D_1s)) / 10;
+  else if (dif < D_1s) {
+    temp = PCon(dif, FKp, D_1s);
+  }
+  switch (us_direction) {
+    case AWAY:
+      steer = -temp;
+      break;
+    case CLOSE:
+      steer = temp;
+      break;
+    default:
+      steer = 0;
+      break;
+  }
 }
-switch (us_direction) {
-  case AWAY:
-    steer = -temp;
-    break;
-  case CLOSE:
-    steer = temp;
-    break;
-  default:
-    steer = 0;
-    break;
-}
-}
-
 
 task main() {
   setsensor();
   ball_state = LOST;
   direction = 0;
   old_us = SensorUS(US);
-  old_field = Sensor(IR_FIELD);
+  old_field = -0;
+  repeat(AVE) {
+    old_field += Sensor(IR_FIELD);
+    u_Wait(10);
+  }
+  old_field /= AVE;
   NumOut(0, LCD_LINE1, ball_state);
 
   while (true) {
