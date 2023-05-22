@@ -1,9 +1,10 @@
 // Move----------------------------
 #define SPEED 75
 #define DETECT_ROTATE 20
+#define ONE_ROTATE_TIME 1154
 // Threshold-----------------------
 #define BALL_DETECT 45
-#define BALL_CATCH 5
+#define BALL_CATCH 55
 #define BALL_LOST BALL_DETECT - 20
 // Port----------------------------
 #define TIRE OUT_AB
@@ -55,13 +56,17 @@ void setsensor() {
 
 void rotate(long deg) {
   if (deg > 0) {
-    RotateMotorEx(TIRE, SPEED, deg * 1.45, 100, true, true);
+    OnFwdSync(TIRE,SPEED,100);
+    u_Wait(ONE_ROTATE_TIME * deg / 360);
     direction += deg;
   } else {
-    RotateMotorEx(TIRE, SPEED, deg * 1.35, -100, true, true);
+    OnFwdSync(TIRE,SPEED,-100);
+    u_Wait(ONE_ROTATE_TIME * deg / 360);
     direction -= deg;
   }
 }
+
+
 
 void wrap_around() {
   long old = direction;
@@ -78,8 +83,7 @@ long PCon(long current, long Kp, long target) {
 
 void u_Wait(long ms) {
   long old = CurrentTick();
-  while (CurrentTick() < old + ms)
-    ;
+  while (CurrentTick() < old + ms);
 }
 
 void check_direction() {
@@ -95,15 +99,17 @@ void ball_detecting() {
   switch (ball_state) {
     case LOST:
       int i = 0;
-      while (i < 12) {
-        rotate(30);
+      while (i < 6) {
+        rotate(60);
         ball_sensor();
+        PlayTone(2000,10);
         if (ball_state != LOST) {
           break;
         }
+        i++;
       }
       OnFwdSync(TIRE, SPEED, 0);
-      u_Wait(1000);
+      u_Wait(500);
       break;
 
     case DETECT:

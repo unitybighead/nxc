@@ -6,7 +6,8 @@ task main(){
   string read;
   string write;
   
-  SetSensorLight(IN_3);
+  SetSensorLight(IN_2);
+  SetSensorType(IN_2,SENSOR_TYPE_LIGHT_ACTIVE);
   int Light;
   
   DeleteFile("L_Data_white.csv");
