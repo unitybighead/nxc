@@ -9,6 +9,7 @@
 // Target--------------------------
 #define US_TARGET 40
 #define D_1s 60
+#define D_1sW 43
 // Threshold-----------------------
 #define BALL_DETECT 40
 #define BALL_CATCH 45
@@ -228,21 +229,27 @@ void field_sensor() {
 void field_sensor_P() {
   int current = Sensor(IR_FIELD);
   int dif = current - old_field;
-  if (dif < D_1s) {
-    long temp = PCon(dif, FKp, D_1s);
-    switch (us_direction) {
-      case AWAY:
-        steer = -temp;
-        break;
-      case CLOSE:
-        steer = temp;
-        break;
-      default:
-        steer = 0;
-        break;
+  if (current < WHITE) {
+    if (dif < D_1sW) {
+      long temp = PCon(dif, FKp, D_1sW);
     }
   }
 }
+else if (dif < D_1s) {
+  long temp = PCon(dif, FKp, D_1s);
+}
+switch (us_direction) {
+  case AWAY:
+    steer = -temp;
+    break;
+  case CLOSE:
+    steer = temp;
+    break;
+  default:
+    steer = 0;
+    break;
+}
+
 
 task main() {
   setsensor();
