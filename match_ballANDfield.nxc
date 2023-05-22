@@ -244,7 +244,7 @@ void field_sensor_P() {
 
   if (current < WHITE_FIELD) {
     if (dif < D_1sW) {
-      long temp = PCon(dif, FKp, D_1sW);
+      temp = PCon(dif, FKp, D_1sW);
     }
   }
 
@@ -266,10 +266,10 @@ void field_sensor_P() {
 
 task main() {
   setsensor();
-  ball_state = LOST;
+  ball_state = KICK;
   direction = 0;
   old_us = SensorUS(US);
-  old_field = -0;
+  old_field = 0;
   repeat(AVE) {
     old_field += Sensor(IR_FIELD);
     u_Wait(10);
