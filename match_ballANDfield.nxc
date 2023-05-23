@@ -179,7 +179,7 @@ void USmove() {
       u_Wait(500);
       OnFwdSync(TIRE, SPEED, 0);
       u_Wait(US_STRAIGHT_TIME);
-      steer = 0 - steer;
+      steer = 0 - steer - 20;
       rotate(steer);
       Off(TIRE);
       u_Wait(500);
