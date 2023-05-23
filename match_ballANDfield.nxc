@@ -269,7 +269,9 @@ void field_sensor_P() {
       steer = 0;
       break;
   }
-  if (steer < -70) {
+  if (abs(steer) < 10) {
+    steer = 0;
+  } else if (steer < -70) {
     steer = -70;
   } else if (steer > 70) {
     steer = 70;
