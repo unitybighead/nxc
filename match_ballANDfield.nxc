@@ -22,7 +22,7 @@
 #define US IN_4
 // Gain----------------------------
 #define USKp 3
-#define FKp 5
+#define FKp 3
 // Other--------------------------
 #define AVE 10
 #define LOST 0
@@ -71,11 +71,11 @@ void setsensor() {
 void rotate(long deg) {
   if (deg > 0) {
     OnFwdSync(TIRE, SPEED, 100);
-    u_Wait((ONE_ROTATE_TIME * deg / 360)+100);
+    u_Wait((ONE_ROTATE_TIME * deg / 360) + 100);
     direction += deg;
   } else {
     OnRevSync(TIRE, SPEED, -100);
-    u_Wait((ONE_ROTATE_TIME * (deg + 20) / 360)+100);
+    u_Wait((ONE_ROTATE_TIME * (deg + 20) / 360) + 100);
     direction -= deg;
   }
 }
@@ -221,9 +221,9 @@ void USsensor() {
       steer = 70;
     }
     // noise
-    // if (current < old_us - 30) {
-    //   steer = 0;
-    // }
+    if (current < old_us - 30) {
+      steer = 0;
+    }
     NumOut(30, LCD_LINE7, steer);
 
     if (current < old_us) {
