@@ -21,7 +21,7 @@
 #define IR_BALL IN_3
 #define US IN_4
 // Gain----------------------------
-#define USKp -3
+#define USKp 3
 #define FKp 5
 // Other--------------------------
 #define AVE 10
@@ -47,7 +47,8 @@ byte us_direction = CLOSE;
 void sensensor();
 void rotate(long deg);
 void wrap_around();
-long PCon(long current, long Kp, long target);
+long PCon_IR(int current, long Kp, long target);
+long PCon_US(byte current, long Kp, long target);
 void USmove();
 void USsensor();
 void ball_sensor();
@@ -70,11 +71,11 @@ void setsensor() {
 void rotate(long deg) {
   if (deg > 0) {
     OnFwdSync(TIRE, SPEED, 100);
-    u_Wait((ONE_ROTATE_TIME * deg / 360) + 200);
+    u_Wait((ONE_ROTATE_TIME * deg / 360)+100);
     direction += deg;
   } else {
-    OnFwdSync(TIRE, SPEED, -100);
-    u_Wait((ONE_ROTATE_TIME * (deg + 20) / 360) - 200);
+    OnRevSync(TIRE, SPEED, -100);
+    u_Wait((ONE_ROTATE_TIME * (deg + 20) / 360)+100);
     direction -= deg;
   }
 }
@@ -87,7 +88,12 @@ void wrap_around() {
   }
 }
 
-long PCon(long current, long Kp, long target) {
+long PCon_US(byte current, long Kp, long target) {
+  long dev = current - target;
+  return Kp * dev;
+}
+
+long PCon_IR(int current, long Kp, long target) {
   long dev = current - target;
   return Kp * dev;
 }
@@ -170,10 +176,13 @@ void USmove() {
     USsensor();
     if (steer != 0) {
       rotate(steer);
+      u_Wait(500);
       OnFwdSync(TIRE, SPEED, 0);
       u_Wait(US_STRAIGHT_TIME);
-      rotate(-steer);
+      steer = 0 - steer;
+      rotate(steer);
       Off(TIRE);
+      u_Wait(500);
     }
     OnFwdSync(TIRE, SPEED, 0);
     Wait(1000);
@@ -187,6 +196,7 @@ void USmove() {
     Wait(1000);
   }
 }
+
 void USsensor() {
   PlayTone(880, 1000);
   byte current;
@@ -200,7 +210,7 @@ void USsensor() {
   } else {
     NumOut(30, LCD_LINE1, current);
 
-    steer = PCon(current, USKp, US_TARGET);
+    steer = PCon_US(current, USKp, US_TARGET);
     if (abs(steer) < 10) {
       steer = 0;
     }
@@ -211,9 +221,9 @@ void USsensor() {
       steer = 70;
     }
     // noise
-    if (current < old_us - 30) {
-      steer = 0;
-    }
+    // if (current < old_us - 30) {
+    //   steer = 0;
+    // }
     NumOut(30, LCD_LINE7, steer);
 
     if (current < old_us) {
@@ -241,12 +251,12 @@ void field_sensor_P() {
 
   if (current < WHITE_FIELD) {
     if (dif < D_1sW) {
-      temp = (PCon(dif, FKp, D_1sW)) / 10;
+      temp = (PCon_IR(dif, FKp, D_1sW)) / 10;
     }
   }
 
   else if (dif < D_1s) {
-    temp = (PCon(dif, FKp, D_1s)) / 10;
+    temp = (PCon_IR(dif, FKp, D_1s)) / 10;
   }
   switch (us_direction) {
     case AWAY:
