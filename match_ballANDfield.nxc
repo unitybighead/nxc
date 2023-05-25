@@ -35,7 +35,7 @@
 #define CLOSE 1
 
 // Private Variable---------------
-byte our_goal = WHITE;
+byte our_goal = WHITE; //which should NOT goal
 char steer;
 byte ball_state;
 bool move_state;
@@ -126,7 +126,9 @@ void ball_detecting() {
   int old_field, current_field;
   old_field = 0, current_field = 0;
 
-  while (ball_state == LOST) {
+  int old_Tick = CurrentTick();
+
+  while (ball_state == LOST||CurrentTick() < old_Tick + 1500) {
     ball_sensor();
     OnFwdSync(TIRE, 50, 100);
   }
