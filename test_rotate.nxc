@@ -1,5 +1,8 @@
 task main(){
   while(true){
-    OnFwdSync(OUT_AB,75,100);
+    OnFwdSync(OUT_AB,75,75);
+    Wait(1000);
+    OnFwdSync(OUT_AB,75,-75);
+    Wait(1000);
   }
 }

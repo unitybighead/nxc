@@ -1,23 +1,28 @@
-#define SPEED 75
+// do your best!
+// Move----------------------------
+#define SPEED 60
 #define TIRE OUT_AB
+#define TURN_SPEED 70
+#define US_STRAIGHT_TIME 500
+#define TURN_TIME 400
+#define STRAIGHT_TIME 2000
+#define ONE_ROTATE_TIME 1145
 int direction = 0;
-void rotate(long deg)
-{
-  if (deg > 0)
-  {
-    RotateMotorEx(TIRE, SPEED, deg * 1.45, 100, true, true);
+void rotate(long deg) {
+  if (deg > 0) {
+    OnFwdSync(TIRE, SPEED, 100);
+    Wait((ONE_ROTATE_TIME * deg / 360) + 100);
     direction += deg;
-  }
-  else
-  {
-    RotateMotorEx(TIRE, SPEED, deg * 1.35, -100, true, true);
+  } else {
+    OnRevSync(TIRE, SPEED, 100);
+    Wait((ONE_ROTATE_TIME * (deg + 20) / 360) + 100);
     direction -= deg;
   }
 }
 
 task main(){
   while(1){
-    rotate(90);
-    rotate(-90);
+    rotate(30);
+    rotate(-30);
   }
 }
