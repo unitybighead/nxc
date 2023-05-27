@@ -184,13 +184,13 @@ void USmove() {
     OnFwdSync(TIRE, SPEED, 0);
     Wait(1000);
     if (ball_state == CATCH) {
-       ball_state = KICK;
+      ball_state = KICK;
     }
     field_sensor_P();
-    if(steer != 0){
+    if (steer != 0) {
       rotate(steer);
     }
-    NumOut(50,LCD_LINE8,steer);
+    NumOut(50, LCD_LINE8, steer);
     Off(TIRE);
     Wait(3000);
   }
@@ -210,31 +210,35 @@ void USsensor() {
     NumOut(30, LCD_LINE1, current);
 
     steer = PCon(current, USKp, US_TARGET);
-    if (abs(steer) < 20) {
-      steer = 0;
-    }
-    // too big
-    if (steer < -70) {
-      steer = -70;
-    } else if (steer > 70) {
-      steer = 70;
-    }
     // noise
     if (current < (old_us - 30)) {
       PlayTone(2500, 100);
       steer = 0;
     }
-    NumOut(30, LCD_LINE3, old_us);
-    NumOut(30, LCD_LINE4, current);
-    NumOut(30, LCD_LINE5, old_us - 30);
-    NumOut(30, LCD_LINE7, steer);
+    // too small
+    else {
+      if (abs(steer) < 20) {
+        steer = 0;
+      }
+      // too big
+      if (steer < -70) {
+        steer = -70;
+      } else if (steer > 70) {
+        steer = 70;
+      }
 
-    if (current < old_us) {
-      us_direction = CLOSE;
-    } else {
-      us_direction = AWAY;
+      NumOut(30, LCD_LINE3, old_us);
+      NumOut(30, LCD_LINE4, current);
+      NumOut(30, LCD_LINE5, old_us - 30);
+      NumOut(30, LCD_LINE7, steer);
+
+      if (current < old_us) {
+        us_direction = CLOSE;
+      } else {
+        us_direction = AWAY;
+      }
+      old_us = current;
     }
-    old_us = current;
   }
 }
 
