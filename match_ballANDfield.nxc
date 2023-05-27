@@ -128,6 +128,7 @@ void ball_detecting() {
     OnFwdSync(TIRE, 50, 100);
   }
   OnFwdSync(TIRE, SPEED, 0);
+  
   while (ball_state == DETECT) {
     ball_sensor();
   }
@@ -157,6 +158,7 @@ void ball_detecting() {
       u_Wait(50);
     }
     current_field /= AVE;
+
     if ((our_goal == WHITE && current_field < old_field)        // go to white
         || (our_goal == BLACK && current_field > old_field)) {  // go to black
       wrap_around();
@@ -215,13 +217,14 @@ void USsensor() {
       PlayTone(2500, 100);
       steer = 0;
     }
-    // too small
+
     else {
+      // too small
       if (abs(steer) < 20) {
         steer = 0;
       }
       // too big
-      if (steer < -70) {
+      else if (steer < -70) {
         steer = -70;
       } else if (steer > 70) {
         steer = 70;
@@ -265,6 +268,7 @@ void field_sensor_P() {
   else if (dif < D_1s) {
     temp = (PCon(dif, FKp, D_1s)) / 10;
   }
+
   switch (us_direction) {
     case AWAY:
       steer = -temp;
