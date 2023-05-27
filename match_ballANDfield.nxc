@@ -1,11 +1,11 @@
 // do your best!
 // Move----------------------------
-#define SPEED 60
+#define SPEED 75
 #define TURN_SPEED 70
 #define US_STRAIGHT_TIME 700
 #define TURN_TIME 400
 #define STRAIGHT_TIME 2000
-#define ONE_ROTATE_TIME 1300
+#define ONE_ROTATE_TIME 1145
 // Target--------------------------
 #define US_TARGET 50
 #define D_1s 45
@@ -22,7 +22,7 @@
 #define US IN_4
 // Gain----------------------------
 #define USKp 3
-#define FKp 3
+#define FKp 10
 // Other--------------------------
 #define AVE 10
 #define LOST 0
@@ -170,25 +170,29 @@ void ball_detecting() {
 void USmove() {
   while (ball_state != LOST) {
     ball_sensor();
-    USsensor();
-    if (steer != 0) {
-      if (steer > 0) {
-        rotate(steer + 20);
-      } else {
-        rotate(steer - 20);
-      }
-      OnFwdSync(TIRE, SPEED, 0);
-      u_Wait(US_STRAIGHT_TIME);
-      rotate(-steer);
-    }
+    // USsensor();
+    // if (steer != 0) {
+    //   if (steer > 0) {
+    //     rotate(steer + 20);
+    //   } else {
+    //     rotate(steer - 20);
+    //   }
+    //   OnFwdSync(TIRE, SPEED, 0);
+    //   u_Wait(US_STRAIGHT_TIME);
+    //   rotate(-steer);
+    // }
     OnFwdSync(TIRE, SPEED, 0);
     Wait(1000);
     if (ball_state == CATCH) {
-      ball_state = KICK;
+       ball_state = KICK;
     }
-    // field_sensor_P();
-    // rotate(steer);
-    RotateMotorEx(TIRE, SPEED, 0, 0, true, true);
+    field_sensor_P();
+    if(steer != 0){
+      rotate(steer);
+    }
+    NumOut(50,LCD_LINE8,steer);
+    Off(TIRE);
+    Wait(3000);
   }
 }
 
