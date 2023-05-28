@@ -110,7 +110,7 @@ long move_ave(byte sensor) {
   return value;
 }
 
-void steer_error_check {
+void steer_error_check(){
   // too small
   if (abs(steer) < 20) {
     steer = 0;
