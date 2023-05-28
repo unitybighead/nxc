@@ -56,6 +56,7 @@ void ball_detecting();
 void field_sensor_P();
 void u_Wait(long ms);
 long move_ave(byte sensor);
+void steer_error_check();
 // Private Function----------------
 
 void setsensor() {
@@ -108,6 +109,19 @@ long move_ave(byte sensor) {
   }
   value /= AVE;
   return value;
+}
+
+void steer_error_check {
+  // too small
+  if (abs(steer) < 20) {
+    steer = 0;
+  }
+  // too big
+  else if (steer < -70) {
+    steer = -70;
+  } else if (steer > 70) {
+    steer = 70;
+  }
 }
 // Private Task--------------------
 
@@ -222,25 +236,16 @@ void USsensor() {
     }
 
     else {
-      // too small
-      if (abs(steer) < 20) {
-        steer = 0;
-      }
-      // too big
-      else if (steer < -70) {
-        steer = -70;
-      } else if (steer > 70) {
-        steer = 70;
-      }
+      steer_error_check();
 
       NumOut(30, LCD_LINE3, old_us);
       NumOut(30, LCD_LINE4, current);
       NumOut(30, LCD_LINE5, old_us - 30);
       NumOut(30, LCD_LINE7, steer);
 
-      if (current < old_us) {
+      if (current < old_us - 3) {
         us_direction = CLOSE;
-      } else {
+      } else if (current > old_us + 3) {
         us_direction = AWAY;
       }
       old_us = current;
@@ -250,12 +255,11 @@ void USsensor() {
 
 void field_sensor_P() {
   long temp;
-  int current = 0;
-  
-  current = move_ave(IR_FIELD);
+
+  int current = move_ave(IR_FIELD);
 
   int dif = abs(current - old_field);
-  
+
   NumOut(0, LCD_LINE3, current);
   NumOut(0, LCD_LINE4, old_field);
   NumOut(0, LCD_LINE5, dif);
@@ -283,13 +287,7 @@ void field_sensor_P() {
       steer = 0;
       break;
   }
-  if (abs(steer) < 10) {
-    steer = 0;
-  } else if (steer < -70) {
-    steer = -70;
-  } else if (steer > 70) {
-    steer = 70;
-  }
+  steer_error_check();
   NumOut(0, LCD_LINE7, steer);
 }
 
@@ -297,8 +295,8 @@ task main() {
   setsensor();
   ball_state = KICK;
   direction = 0;
-  old_us = SensorUS(US);
 
+  old_us = SensorUS(US);
   old_field = move_ave(IR_FIELD);
 
   NumOut(0, LCD_LINE1, ball_state);
