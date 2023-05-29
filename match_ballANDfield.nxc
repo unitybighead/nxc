@@ -79,11 +79,8 @@ void rotate(long deg) {
 }
 
 void wrap_around() {
-  long old = direction;
-  while (direction >= old + 90) {
     OnFwdSync(TIRE, 30, 50);
     u_Wait(500);
-  }
 }
 
 long PCon(int current, long Kp, long target) {
@@ -304,7 +301,6 @@ void field_sensor_P() {
 task main() {
   setsensor();
   ball_state = KICK;
-  direction = 0;
 
   old_us = SensorUS(US);
   old_field = move_ave(IR_FIELD);
