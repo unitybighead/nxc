@@ -218,7 +218,7 @@ void USmove() {
     }
     NumOut(50, LCD_LINE8, steer);
     Off(TIRE);
-    Wait(3000);
+    // Wait(3000);
   }
 }
 
@@ -293,6 +293,9 @@ void field_sensor_P() {
     default:
       steer = 0;
       break;
+  }
+  if(dif > 0){
+    steer = - steer;
   }
   steer_error_check();
   NumOut(0, LCD_LINE7, steer);
