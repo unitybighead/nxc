@@ -173,7 +173,7 @@ void ball_detecting() {
   }
 
   while (ball_state == DETECT) {
-    PlayTone(1300,10);
+    PlayTone(1300, 10);
     OnFwdSync(TIRE, SPEED, 0);
     ball_sensor();
   }
@@ -197,10 +197,11 @@ void ball_detecting() {
     Off(TIRE);
     current_field = move_ave(IR_FIELD);
 
-    if ((our_goal == WHITE && current_field < old_field + 30)        // go to white
-      || (our_goal == BLACK && current_field > old_field - 30)) {  // go to black
-      PlayTone(1500,50);
-      OnRevSync(TIRE,SPEED,0);
+    if ((our_goal == WHITE && current_field < old_field + 30)  // go to white
+        ||
+        (our_goal == BLACK && current_field > old_field - 30)) {  // go to black
+      PlayTone(1500, 50);
+      OnRevSync(TIRE, SPEED, 0);
       u_Wait(1000);
     }
 
