@@ -43,7 +43,7 @@ int old_us;
 int old_field;
 byte us_direction = CLOSE;
 // Prototype Declaration-----------
-void sensensor();
+void setsensor();
 void rotate(long deg);
 void wrap_around();
 long PCon(int current, long Kp, long target);
@@ -70,10 +70,10 @@ void setsensor() {
 
 void rotate(long deg) {
   if (deg > 0) {
-    OnFwdSync(TIRE, SPEED, SPEED - 20);
+    OnFwdSync(TIRE, SPEED, SPEED - 30);
     u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
   } else {
-    OnFwdSync(TIRE, SPEED, -SPEED + 20);
+    OnFwdSync(TIRE, SPEED, -SPEED + 30);
     u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
   }
 }
@@ -153,7 +153,7 @@ void ball_detecting() {
 
   long old_Tick = CurrentTick();
 
-  while (ball_state == LOST && CurrentTick() < (old_Tick + 2500)) {
+  while (ball_state == LOST && CurrentTick() < (old_Tick + 2800)) {
     PlayTone(523, 10);
     ball_sensor();
     OnFwdSync(TIRE, 40, 100);
@@ -175,7 +175,8 @@ void ball_detecting() {
     // check attack to the wall
     current_field = move_ave(IR_FIELD);
     if (abs(current_field - old_field) < 10) {
-      PlayTone(1300, 10) OnRevSync(TIRE, SPEED, 0);
+      PlayTone(1300, 10);
+      OnRevSync(TIRE, SPEED, 0);
     }
   }
 
@@ -201,9 +202,9 @@ void ball_detecting() {
     u_Wait(500);
     current_field = move_ave(IR_FIELD);
 
-    if ((our_goal == WHITE && current_field > old_field + 30)  // go to white
+    if ((our_goal == WHITE && current_field > old_field + 20)  // go to white
         ||
-        (our_goal == BLACK && current_field < old_field - 30)) {  // go to black
+        (our_goal == BLACK && current_field < old_field - 20)) {  // go to black
       PlayTone(1500, 50);
       OnRevSync(TIRE, SPEED, 0);
       u_Wait(1000);
