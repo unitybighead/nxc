@@ -12,7 +12,7 @@
 #define D_1sW 40
 // Threshold-----------------------
 #define BALL_DETECT 35
-#define BALL_CATCH 57
+#define BALL_CATCH 55
 #define BALL_LOST BALL_DETECT - 20
 #define WHITE_FIELD 500
 // Port----------------------------
@@ -35,7 +35,7 @@
 #define CLOSE 1
 
 // Private Variable---------------
-byte our_goal = WHITE;  // which should NOT goal
+byte our_goal = BLACK;  // which should NOT goal
 int steer;
 byte ball_state;
 bool move_state;
@@ -153,7 +153,7 @@ void ball_detecting() {
 
   long old_Tick = CurrentTick();
 
-  while (ball_state == LOST && CurrentTick() < (old_Tick + 2800)) {
+  while (ball_state == LOST && CurrentTick() < (old_Tick + 3000)) {
     PlayTone(523, 10);
     ball_sensor();
     OnFwdSync(TIRE, 40, 100);
@@ -170,7 +170,7 @@ void ball_detecting() {
         OnFwdSync(TIRE, SPEED, 0);
         break;
     }
-    u_Wait(1000);
+    u_Wait(700);
 
     // check attack to the wall
     current_field = move_ave(IR_FIELD);
@@ -195,7 +195,7 @@ void ball_detecting() {
   }
 
   // catch
-  else if (ball_state = CATCH) {
+  else if (ball_state == CATCH) {
     PlayTone(1263, 100);
     OnFwdSync(TIRE, 30, 0);
     old_field = move_ave(IR_FIELD);
@@ -217,7 +217,7 @@ void ball_detecting() {
 }
 
 void USmove() {
-  while (ball_state != LOST) {
+  while (ball_state != CATCH && ball_state != DETECT) {
     ball_sensor();
     USsensor();
     if (steer != 0) {
