@@ -12,7 +12,7 @@
 #define D_1sW 40
 // Threshold-----------------------
 #define BALL_DETECT 35
-#define BALL_CATCH 60
+#define BALL_CATCH 57
 #define BALL_LOST BALL_DETECT - 20
 #define WHITE_FIELD 500
 // Port----------------------------
@@ -197,9 +197,9 @@ void ball_detecting() {
     Off(TIRE);
     current_field = move_ave(IR_FIELD);
 
-    if ((our_goal == WHITE && current_field < old_field + 30)  // go to white
+    if ((our_goal == WHITE && current_field > old_field + 30)  // go to white
         ||
-        (our_goal == BLACK && current_field > old_field - 30)) {  // go to black
+        (our_goal == BLACK && current_field < old_field - 30)) {  // go to black
       PlayTone(1500, 50);
       OnRevSync(TIRE, SPEED, 0);
       u_Wait(1000);
