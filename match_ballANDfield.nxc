@@ -161,6 +161,7 @@ void ball_detecting() {
     NumOut(0, LCD_LINE3, CurrentTick());
   }
   if (ball_state == LOST) {
+    old_field = move_ave(IR_FIELD);
     switch (Random(5)) {
       case 0:
         OnRevSync(TIRE, SPEED, 0);
@@ -170,6 +171,12 @@ void ball_detecting() {
         break;
     }
     u_Wait(1000);
+
+    //check attack to the wall
+    current_field = move_ave(IR_FIELD);
+    if (abs(current_field - old_field) < 5){
+      OnRevSync(TIRE,SPEED,0);
+    }
   }
 
   while (ball_state == DETECT) {
