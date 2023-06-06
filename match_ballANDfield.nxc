@@ -172,10 +172,10 @@ void ball_detecting() {
     }
     u_Wait(1000);
 
-    //check attack to the wall
+    // check attack to the wall
     current_field = move_ave(IR_FIELD);
-    if (abs(current_field - old_field) < 5){
-      OnRevSync(TIRE,SPEED,0);
+    if (abs(current_field - old_field) < 10) {
+      PlayTone(1300, 10) OnRevSync(TIRE, SPEED, 0);
     }
   }
 
@@ -196,12 +196,9 @@ void ball_detecting() {
   // catch
   else if (ball_state = CATCH) {
     PlayTone(1263, 100);
-    Off(TIRE);
+    OnFwdSync(TIRE, 30, 0);
     old_field = move_ave(IR_FIELD);
-
-    OnFwdSync(TIRE, 50, 0);
     u_Wait(500);
-    Off(TIRE);
     current_field = move_ave(IR_FIELD);
 
     if ((our_goal == WHITE && current_field > old_field + 30)  // go to white
@@ -210,11 +207,11 @@ void ball_detecting() {
       PlayTone(1500, 50);
       OnRevSync(TIRE, SPEED, 0);
       u_Wait(1000);
+    } else {
+      OnFwdSync(TIRE, SPEED, 0);
+      check_direction();
+      ball_state = KICK;
     }
-
-    OnFwdSync(TIRE, SPEED, 0);
-    check_direction();
-    ball_state = KICK;
   }
 }
 
