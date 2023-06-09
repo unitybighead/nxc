@@ -21,7 +21,7 @@
 #define IR_BALL IN_3
 #define US IN_4
 // Gain----------------------------
-#define USKp 25
+#define USKp 15
 #define FKp 10
 // Other--------------------------
 #define AVE 10
@@ -70,10 +70,10 @@ void setsensor() {
 
 void rotate(long deg) {
   if (deg > 0) {
-    OnFwdSync(TIRE, SPEED, SPEED - 30);
+    OnFwdSync(TIRE, SPEED, 20);
     u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
   } else {
-    OnFwdSync(TIRE, SPEED, -SPEED + 30);
+    OnFwdSync(TIRE, SPEED, -20);
     u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
   }
 }
@@ -231,7 +231,7 @@ void USmove() {
       rotate(-steer);
     }
     OnFwdSync(TIRE, SPEED, 0);
-    Wait(500);
+    Wait(300);
 
     if (ball_state == CATCH) {
       ball_state = KICK;
