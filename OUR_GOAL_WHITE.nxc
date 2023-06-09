@@ -1,0 +1,346 @@
+// do your best!
+// Move----------------------------
+#define SPEED 75
+#define TURN_SPEED 70
+#define US_STRAIGHT_TIME 700
+#define TURN_TIME 400
+#define STRAIGHT_TIME 2000
+#define ONE_ROTATE_TIME 1145
+// Target--------------------------
+#define US_TARGET 50
+#define D_1s 50
+#define D_1sW 40
+// Threshold-----------------------
+#define BALL_DETECT 35
+#define BALL_CATCH 55
+#define BALL_LOST BALL_DETECT - 20
+#define WHITE_FIELD 500
+// Port----------------------------
+#define TIRE OUT_AB
+#define IR_FIELD IN_2
+#define IR_BALL IN_3
+#define US IN_4
+// Gain----------------------------
+#define USKp 15
+#define FKp 10
+// Other--------------------------
+#define AVE 10
+#define LOST 0
+#define DETECT 1
+#define CATCH 2
+#define KICK 3
+#define BLACK 0
+#define WHITE 1
+#define AWAY 0
+#define CLOSE 1
+
+// Private Variable---------------
+byte our_goal = WHITE;  // which should NOT goal
+int steer;
+byte ball_state;
+bool move_state;
+int old_us;
+int old_field;
+byte us_direction = CLOSE;
+// Prototype Declaration-----------
+void setsensor();
+void rotate(long deg);
+void wrap_around();
+long PCon(int current, long Kp, long target);
+void USmove();
+void USsensor();
+void ball_sensor();
+void ball_detecting();
+void field_sensor_P();
+void u_Wait(long ms);
+long move_ave(byte sensor);
+void steer_error_check();
+// Private Function----------------
+
+void setsensor() {
+  SetSensorLowspeed(US);
+  SetSensor(IR_BALL, SENSOR_LIGHT);
+  SetSensorMode(IR_BALL, SENSOR_MODE_PERCENT);
+  SetSensorType(IR_BALL, SENSOR_TYPE_LIGHT_INACTIVE);
+  SetSensor(IR_FIELD, SENSOR_LIGHT);
+  SetSensorMode(IR_FIELD, SENSOR_MODE_RAW);
+  SetSensorType(IR_FIELD, SENSOR_TYPE_LIGHT_ACTIVE);
+  Wait(100);
+}
+
+void rotate(long deg) {
+  if (deg > 0) {
+    OnFwdSync(TIRE, SPEED, 20);
+    u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
+  } else {
+    OnFwdSync(TIRE, SPEED, -20);
+    u_Wait((ONE_ROTATE_TIME * abs(deg) / 360) + 100);
+  }
+}
+
+void wrap_around() {
+  OnFwdSync(TIRE, 30, 50);
+  u_Wait(500);
+}
+
+long PCon(int current, long Kp, long target) {
+  long dev = current - target;
+  return (Kp / 10) * dev;
+}
+
+void u_Wait(long ms) {
+  long old = CurrentTick();
+  while (CurrentTick() < old + ms)
+    ;
+}
+
+long move_ave(byte sensor) {
+  long value = 0;
+  repeat(AVE) {
+    value += Sensor(sensor);
+    u_Wait(30);
+  }
+  value /= AVE;
+  return value;
+}
+
+void steer_error_check() {
+  // too small
+  if (abs(steer) < 20) {
+    steer = 0;
+  }
+  // too big
+  else if (steer < -70) {
+    steer = -70;
+  } else if (steer > 70) {
+    steer = 70;
+  }
+}
+
+void check_direction() {
+  OnFwdSync(TIRE, SPEED, 0);
+  old_us = SensorUS(US);
+  u_Wait(100);
+  int current = SensorUS(US);
+  if (current < old_us - 3) {
+    us_direction = CLOSE;
+  } else if (current > old_us + 3) {
+    us_direction = AWAY;
+  }
+  old_us = current;
+}
+// Private Task--------------------
+
+void ball_sensor() {
+  u_Wait(16);
+  int sensor = Sensor(IR_BALL);
+  if (sensor >= BALL_DETECT) {
+    ball_state = DETECT;
+    if (sensor >= BALL_CATCH) {
+      ball_state = CATCH;
+    }
+  } else {  //(sensor < BALL_LOST){
+    ball_state = LOST;
+  }
+  ClearScreen();
+  NumOut(0, LCD_LINE1, ball_state);
+  NumOut(20, LCD_LINE1, sensor);
+}
+
+void ball_detecting() {
+  int old_field, current_field;
+  old_field = 0, current_field = 0;
+
+  long old_Tick = CurrentTick();
+
+  while (ball_state == LOST && CurrentTick() < (old_Tick + 3000)) {
+    PlayTone(523, 10);
+    ball_sensor();
+    OnFwdSync(TIRE, 40, 100);
+    NumOut(0, LCD_LINE2, old_Tick);
+    NumOut(0, LCD_LINE3, CurrentTick());
+  }
+  if (ball_state == LOST) {
+    old_field = move_ave(IR_FIELD);
+    switch (Random(5)) {
+      case 0:
+        OnRevSync(TIRE, SPEED, 0);
+        break;
+      default:
+        OnFwdSync(TIRE, SPEED, 0);
+        break;
+    }
+    u_Wait(700);
+
+    // check attack to the wall
+    current_field = move_ave(IR_FIELD);
+    if (abs(current_field - old_field) < 10) {
+      PlayTone(1300, 10);
+      OnRevSync(TIRE, SPEED, 0);
+    }
+  }
+
+  while (ball_state == DETECT) {
+    PlayTone(1300, 10);
+    OnFwdSync(TIRE, SPEED, 0);
+    ball_sensor();
+  }
+
+  // lost
+
+  if (ball_state == LOST) {
+    PlayTone(440, 100);
+    OnRevSync(TIRE, 30, 0);
+    u_Wait(100);
+  }
+
+  // catch
+  else if (ball_state == CATCH) {
+    PlayTone(1263, 100);
+    OnFwdSync(TIRE, 30, 0);
+    old_field = move_ave(IR_FIELD);
+    u_Wait(500);
+    current_field = move_ave(IR_FIELD);
+
+    if ((our_goal == WHITE && current_field > old_field + 20)  // go to white
+        ||
+        (our_goal == BLACK && current_field < old_field - 20)) {  // go to black
+      PlayTone(1500, 50);
+      OnRevSync(TIRE, SPEED, 0);
+      u_Wait(1000);
+    } else {
+      OnFwdSync(TIRE, SPEED, 0);
+      check_direction();
+      ball_state = KICK;
+    }
+  }
+}
+
+void USmove() {
+  while (ball_state != CATCH && ball_state != DETECT) {
+    ball_sensor();
+    USsensor();
+    if (steer != 0) {
+      if (steer > 0) {
+        rotate(steer + 20);
+      } else {
+        rotate(steer - 20);
+      }
+      OnFwdSync(TIRE, SPEED, 0);
+      u_Wait(US_STRAIGHT_TIME);
+      rotate(-steer);
+    }
+    OnFwdSync(TIRE, SPEED, 0);
+    Wait(300);
+
+    if (ball_state == CATCH) {
+      ball_state = KICK;
+    }
+
+    field_sensor_P();
+    if (steer != 0) {
+      rotate(steer);
+    }
+
+    NumOut(50, LCD_LINE8, steer);
+    Off(TIRE);
+    // Wait(3000);
+  }
+}
+
+void USsensor() {
+  PlayTone(880, 1000);
+  int current;
+  ClearSensor(US);
+  // ClearScreen();
+  current = SensorUS(US);
+  if (current < 0 || current >= 255) {
+    PlayTone(1000, 100);
+    ClearSensor(US);
+    steer = 0;
+  } else {
+    NumOut(50, LCD_LINE1, current);
+
+    steer = PCon(current, USKp, US_TARGET);
+    // noise
+    if (current < (old_us - 30)) {
+      PlayTone(2500, 100);
+      steer = 0;
+    }
+
+    else {
+      steer_error_check();
+
+      NumOut(50, LCD_LINE3, old_us);
+      NumOut(50, LCD_LINE4, current);
+      NumOut(50, LCD_LINE5, old_us - 30);
+      NumOut(50, LCD_LINE7, steer);
+
+      if (current < old_us - 3) {
+        us_direction = CLOSE;
+      } else if (current > old_us + 3) {
+        us_direction = AWAY;
+      }
+      old_us = current;
+    }
+  }
+}
+
+void field_sensor_P() {
+  long temp;
+
+  int current = move_ave(IR_FIELD);
+
+  int dif = abs(current - old_field);
+
+  NumOut(0, LCD_LINE3, current);
+  NumOut(0, LCD_LINE4, old_field);
+  NumOut(0, LCD_LINE5, dif);
+
+  old_field = current;
+
+  if (current < WHITE_FIELD) {
+    if (dif < D_1sW) {
+      temp = PCon(dif, FKp, D_1sW);
+    }
+  }
+
+  else if (dif < D_1s) {
+    temp = PCon(dif, FKp, D_1s);
+  }
+
+  switch (us_direction) {
+    case AWAY:
+      steer = -temp;
+      break;
+    case CLOSE:
+      steer = temp;
+      break;
+    default:
+      steer = 0;
+      break;
+  }
+  if (dif > 0) {
+    steer = -steer;
+  }
+  steer_error_check();
+  NumOut(0, LCD_LINE7, steer);
+}
+
+task main() {
+  setsensor();
+  ball_state = LOST;
+
+  old_us = SensorUS(US);
+  old_field = move_ave(IR_FIELD);
+
+  NumOut(0, LCD_LINE1, ball_state);
+
+  while (true) {
+    if (ball_state != KICK) {
+      ball_detecting();
+    } else {
+      USmove();
+    }
+  }
+}
