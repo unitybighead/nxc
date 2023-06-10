@@ -5,7 +5,7 @@
 #define US_STRAIGHT_TIME 700
 #define TURN_TIME 400
 #define STRAIGHT_TIME 2000
-#define ONE_ROTATE_TIME 1145
+#define ONE_ROTATE_TIME 1150
 // Target--------------------------
 #define US_TARGET 50
 #define D_1s 50
