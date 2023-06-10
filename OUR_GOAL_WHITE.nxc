@@ -217,7 +217,7 @@ void ball_detecting() {
 }
 
 void USmove() {
-  while (ball_state != CATCH && ball_state != DETECT) {
+  while (ball_state != LOST && ball_state != DETECT) {
     ball_sensor();
     USsensor();
     if (steer != 0) {
