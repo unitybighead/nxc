@@ -12,7 +12,7 @@
 #define D_1sW 40
 // Threshold-----------------------
 #define BALL_DETECT 35
-#define BALL_CATCH 55
+#define BALL_CATCH 50
 #define BALL_LOST BALL_DETECT - 20
 #define WHITE_FIELD 500
 // Port----------------------------
@@ -153,6 +153,8 @@ void ball_detecting() {
 
   long old_Tick = CurrentTick();
 
+  ball_sensor();
+
   while (ball_state == LOST && CurrentTick() < (old_Tick + 3000)) {
     PlayTone(523, 10);
     ball_sensor();
@@ -174,9 +176,10 @@ void ball_detecting() {
 
     // check attack to the wall
     current_field = move_ave(IR_FIELD);
-    if (abs(current_field - old_field) < 10) {
+    if (abs(current_field - old_field) < 30) {
       PlayTone(1300, 10);
       OnRevSync(TIRE, SPEED, 0);
+      u_Wait(300);
     }
   }
 
@@ -202,9 +205,9 @@ void ball_detecting() {
     u_Wait(500);
     current_field = move_ave(IR_FIELD);
 
-    if ((our_goal == WHITE && current_field > old_field + 20)  // go to white
+    if ((our_goal == WHITE && current_field > old_field + 10)  // go to white
         ||
-        (our_goal == BLACK && current_field < old_field - 20)) {  // go to black
+        (our_goal == BLACK && current_field < old_field - 10)) {  // go to black
       PlayTone(1500, 50);
       OnRevSync(TIRE, SPEED, 0);
       u_Wait(1000);

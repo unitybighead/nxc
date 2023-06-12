@@ -152,6 +152,7 @@ void ball_detecting() {
   old_field = 0, current_field = 0;
 
   long old_Tick = CurrentTick();
+  ball_sensor();
 
   while (ball_state == LOST && CurrentTick() < (old_Tick + 3000)) {
     PlayTone(523, 10);
